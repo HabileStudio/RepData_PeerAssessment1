@@ -1,3 +1,10 @@
+## Warning
+
+The files have been rendered through the rmarkdown::render() command instead of knit2html() as it seems that now it is the recommended approach. It means the structure is a bit different:
+
+**figures are not in the /figures file but in PA1_template_files/figure-html/**.
+
+
 ## Introduction
 
 It is now possible to collect a large amount of data about personal
