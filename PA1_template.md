@@ -10,7 +10,8 @@ output:
 
 We'll need a few libraries to display data (ggplot2), change the interval IDs into timestamps (chron) and for data manipulation (dplyr)
 
-``` {r}
+
+```r
 library(ggplot2)
 library(dplyr)
 library(chron)
@@ -25,7 +26,8 @@ data$date <- as.Date(data$date)
 
 We can see here the frequency of total steps per day. We can see that values between 10000 and 12000 steps per day are the most common. *(We've removed the 0 values corresponding to missing data)*
 
-``` {r}
+
+```r
 totalsteps <- aggregate(data$steps, by=list(data$date), sum, na.rm=TRUE)
 names(totalsteps) <- c("date", "steps")
 # Remove the 0 values from the set
@@ -35,9 +37,16 @@ ggplot(totalsteps, aes(steps)) +
   geom_histogram()
 ```
 
+```
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+
 The mean and median are indeed in that range.
 
-``` {r}
+
+```r
 info <- c(mean(totalsteps$steps, na.rm=TRUE),
           median(totalsteps$steps, na.rm=TRUE))
 names(info) <- c("mean", "median")
@@ -45,11 +54,16 @@ names(info) <- c("mean", "median")
 info
 ```
 
+```
+##     mean   median 
+## 10766.19 10765.00
+```
+
 
 ## What is the average daily activity pattern?
 
-``` {r}
 
+```r
 # each day have 288 intervals of 5 min each
 # we'll label those accordingly per day
 # get all 5-min intervals in a day
@@ -67,6 +81,13 @@ data <- mutate(data, timestamp = rep(day_intervals,61))
 means_by_timestamp <- data %>%
                       group_by(timestamp) %>%
                       summarise(steps = mean(steps, na.rm = TRUE))
+```
+
+```
+## `summarise()` ungrouping output (override with `.groups` argument)
+```
+
+```r
 names(means_by_timestamp) <- c("timestamp", "steps")
 
 plot(means_by_timestamp, type = "l",
@@ -86,26 +107,39 @@ with(max_time, text(
   cex = 0.85,
   col = "dodgerblue1"
 ))
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
 
 
 ## Imputing missing values
 
 We appear to have quite a lot of missing values for steps (2304).
 
-``` {r}
+
+```r
 missing <- data[is.na(data$steps),]
 nb_na <- dim(missing)[[1]]
 paste(nb_na, "missing values")
+```
+
+```
+## [1] "2304 missing values"
+```
+
+```r
 percentage_na <- nb_na / dim(data)[[1]]
 percentage_na
 ```
 
+```
+## [1] 0.1311475
+```
+
 We have about 13% of values that are missing. To avoid biases in the data analysis, we'll fill in the missing values by taking the average number of steps per interval. This assumes the activity pattern is similar amongst days.
 
-``` {r}
 
+```r
 data <- tibble::as_tibble(data)
 
 extrapolated <- left_join(data, means_by_timestamp,
@@ -118,15 +152,28 @@ extrapolated$steps_extrapolated[defined] <- extrapolated$steps_original[defined]
 extrapolated[1230,]
 ```
 
+```
+## # A tibble: 1 x 5
+##   steps_original date       interval timestamp steps_extrapolated
+##            <int> <date>        <int> <times>                <dbl>
+## 1            119 2012-10-05      625 06:25:00                 119
+```
+
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-``` {r}
 
+```r
 # To get the days in English
 Sys.setenv("LANGUAGE"="En")
 Sys.setlocale("LC_ALL", "English")
+```
 
+```
+## [1] "LC_COLLATE=English_United States.1252;LC_CTYPE=English_United States.1252;LC_MONETARY=English_United States.1252;LC_NUMERIC=C;LC_TIME=English_United States.1252"
+```
+
+```r
 # Get vectors of days for later subsetting
 data_days <- weekdays(extrapolated$date)
 week_days <- data_days %in% c("Monday","Tuesday","Wednesday","Thursday","Friday")
@@ -136,12 +183,26 @@ weekends <- data_days %in% c("Saturday","Sunday")
 means_weekdays <- extrapolated[week_days,] %>%
                   group_by(timestamp) %>%
                   summarise(steps = mean(steps_extrapolated))
+```
+
+```
+## `summarise()` ungrouping output (override with `.groups` argument)
+```
+
+```r
 names(means_weekdays) <- c("timestamp", "steps")
 
 # Get the mean per interval for weekends
 means_weekends <- extrapolated[weekends,] %>%
                   group_by(timestamp) %>%
                   summarise(steps = mean(steps_extrapolated))
+```
+
+```
+## `summarise()` ungrouping output (override with `.groups` argument)
+```
+
+```r
 names(means_weekends) <- c("timestamp", "steps")
 
 
@@ -157,8 +218,9 @@ lines(means_weekends, col="red")
 
 legend("topright", legend=c("Weekdays", "Weekends"),
        col=c("blue", "red"), lwd=1, cex=0.75)
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
 
 We are seeing differences in activity patterns. Weekends have less activity in the early morning and a bit more in the late morning:
 
