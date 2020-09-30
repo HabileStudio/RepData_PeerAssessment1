@@ -160,14 +160,14 @@ names(means_weekends) <- c("timestamp", "steps")
 plot(means_weekdays, type = "l", col="blue",
      xaxt = "n",
      cex.axis = 0.75, cex.lab = 0.75)
-legend(1, 1, legend=c("Weekdays", "Weekends"),
-       col=c("blue", "red"), cex=0.75)
-
 axis(1, labels = substr(day_intervals, 1, 5),
      at = day_intervals,
      las = 2,
      cex.axis = 0.75,
      )
 lines(means_weekends, col="red")
+
+legend("topright", legend=c("Weekdays", "Weekends"),
+       col=c("blue", "red"), lwd=1, cex=0.75)
 
 ```
